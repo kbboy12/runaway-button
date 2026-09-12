@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>     
+<head>
+  <title>shy button arcade</title>
+  <style>
+  body {
+    background-color: #0f172a;
+    color: white;
+    font-family:  sans-serif;
+    text-align: center;
+    padding-top: 50px;
+  }
+
+  /* fenced area for the button */
+  .arena {
+    position: relative;
+    width: 350px;
+    height: 250px;
+    margin: auto;
+    border: 3px dashed #38bdf8;
+    border-radius: 16px;
+    padding: 20px;
+  }
+
+  /*base button style */
+  .runaway-btn {
+    position: fixed;
+    top:80%;
+    left: 30%;
+    background-color: #ef4444;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: left 0.15s ease, top 0.15s ease, background-color 0.2s ease;
+  }
+
+  /* Reaction when cursor/finger hovers over button */
+  .runaway-btn:hover {
+    background-color: #f59e0b;
+     }
+  </style> 
+</head>
+<body>
+
+<div class="arena">
+<h1>⚠️ DO NOT TOUCH⚠️</h1>
+<p> This button is extremely shy... </p>
+<p id="dodge-count">Dodges: 0</p>
+<button class="runaway-btn">CLICK ME!</button>
+</div>
+
+<script>
+  const btn = document.querySelector('.runaway-btn');
+  const counterdisplay = document.getElementById('dodge-count');
+
+  let dodges = 0 
+  const taunts = ["Too slow!", "Nice try", "Missed me!", "can't touch this!", "Almost!", "Nope not now!"];
+  const colors = ["#ef4444", "#3b82f6", "#10b981" ,"#f59e0b", "#ec4899"]
+  
+ btn.addEventListener('mouseover' , function (e) {
+    dodges++;
+    if (counterdisplay) {
+    counterdisplay.textContent =`Dodges: ${dodges}`;
+    }
+
+    btn.textContent = taunts[Math.floor(Math.random() * taunts.length)]
+    btn.style.backgroundColor = colors[Math.floor(Math.random() *colors.length)];
+    const screenWidth =window.innerWidth;
+    const screenHeight = window.innerHeight;
+    const btnWidth = btn.offsetWidth;
+    const btnHeight = btn.offsetHeight
+    const padding = 20;
+
+  // 1. calculate the maximum safe space so it doesn't go off-screen
+  const maxX = screenWidth - btnWidth - padding;
+  const maxY = screenHeight - btnHeight - padding;
+
+  //2.Generate a totally random X and Y coordinate
+  const randomX = Math.floor(Math.random() * maxX);
+  const randomY = Math.floor(Math.random() * maxY);
+
+  //3.Move the button to the new random spot 
+  btn.style.left = randomX + 'px';
+  btn.style.top = randomY+ 'px';
+});
+</script>
+
+</body>
+</html>
+
