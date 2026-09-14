@@ -42,6 +42,30 @@
   .runaway-btn:hover {
     background-color: #f59e0b;
      }
+  .level-selector {
+    margin: 15px 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .lel-btn {
+    background: #2a2d3d;
+    color: white;
+    border: 2px solid #4a4e69;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2 ease;
+  }
+
+  .lel-btn.active {
+    background-color: #ec4899;
+    border-color: #f472b6;
+    box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+  }
   </style> 
 </head>
 <body>
@@ -50,6 +74,12 @@
 <h1>⚠️ DO NOT TOUCH⚠️</h1>
 <p> This button is extremely shy... </p>
 <p id="dodge-count">Dodges: 0</p>
+<div class = "level-selector">
+  <button class="lvl-btn active" onclick="setLevel(1)">Lvl 1:shy</button>
+  <button class="lvl-btn" onclick="setLevel(2)">Lvl 2: panicked</button>
+  <button class="lvl-btn" onclick="setLevel(3)">Lvl 3: Hyperactive</button>
+  <button class="lvl-btn" onclick="setLevel(4)">Lvl 4: Impossible</button>
+</div>
 <button class="runaway-btn">CLICK ME!</button>
 </div>
 
@@ -57,11 +87,25 @@
   const btn = document.querySelector('.runaway-btn');
   const counterdisplay = document.getElementById('dodge-count');
 
-  let dodges = 0 
+  let dodges = 0
+  let currentLevel = 1;
+
   const taunts = ["Too slow!", "Nice try", "Missed me!", "can't touch this!", "Almost!", "Nope not now!"];
   const colors = ["#ef4444", "#3b82f6", "#10b981" ,"#f59e0b", "#ec4899"]
   
- btn.addEventListener('mouseover' , function (e) {
+function setLevel(lvl) {
+  currentLevel = lvl;
+  document.querySelectorAll('.lvl-btn').forEach((b, idx) => {
+    b.classList.toggle('active , idx + 1 === lvl');
+  });
+
+  //Level speed control
+  if (lvl === 1) btn.style.transition = "left 0.3s ease, top 0.3s ease";
+  if (lvl === 2) btn.style.transition = "left 0.15s ease, top 0.15s ease";
+  if (lvl === 3) btn.style.transition = "left 0.05s ease, top 0.05s ease";
+  if (lvl === 4) btn.stylr.transition = "none"; // Instant teleporting
+}
+  btn.addEventListener('mouseover' , function (e) {
     dodges++;
     if (counterdisplay) {
     counterdisplay.textContent =`Dodges: ${dodges}`;
@@ -69,6 +113,15 @@
 
     btn.textContent = taunts[Math.floor(Math.random() * taunts.length)]
     btn.style.backgroundColor = colors[Math.floor(Math.random() *colors.length)];
+    const randomHue = Math.floor(Math.random() * 360);
+    document.body.style.backgroundColor = `hsl(${randomHue} , 50% , 18%)`;
+
+    let scaleMin = 0.8, scaleMax = 1.3;
+    if (currentLevel === 3) { scaleMin = 0.6; scaleMax = 1.4; }
+    if (currentLevel === 4) { scaleMin = 0.3; scaleMax = 0.20; }
+
+    const randomScale = (Math.random() * (scaleMax - scaleMin) + scaleMin).toFixed(2);
+    btn.style.transform = `scale(${randomScale})`;
     const screenWidth =window.innerWidth;
     const screenHeight = window.innerHeight;
     const btnWidth = btn.offsetWidth;
@@ -83,7 +136,7 @@
   const randomX = Math.floor(Math.random() * maxX);
   const randomY = Math.floor(Math.random() * maxY);
 
-  //3.Move the button to the new random spot 
+  //3.Move the button to the new random spot
   btn.style.left = randomX + 'px';
   btn.style.top = randomY+ 'px';
 });
@@ -92,3 +145,4 @@
 </body>
 </html>
 
+ 
