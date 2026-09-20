@@ -1,148 +1,491 @@
 <!DOCTYPE html>
-<html>     
+<html lang="en">
 <head>
-  <title>shy button arcade</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shy Button Arcade</title>
   <style>
-  body {
-    background-color: #0f172a;
-    color: white;
-    font-family:  sans-serif;
-    text-align: center;
-    padding-top: 50px;
-  }
+    * {
+      box-sizing: border-box;
+    }
 
-  /* fenced area for the button */
-  .arena {
-    position: relative;
-    width: 350px;
-    height: 250px;
-    margin: auto;
-    border: 3px dashed #38bdf8;
-    border-radius: 16px;
-    padding: 20px;
-  }
+    body {
+      background-color: #0f172a;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 15px 10px;
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+    }
 
-  /*base button style */
-  .runaway-btn {
-    position: fixed;
-    top:80%;
-    left: 30%;
-    background-color: #ef4444;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: left 0.15s ease, top 0.15s ease, background-color 0.2s ease;
-  }
+    /* Compact Dashboard Arena Box */
+    .arena {
+      position: relative;
+      width: 90%;
+      max-width: 340px;
+      margin: 10px auto;
+      border: 3px dashed #38bdf8;
+      border-radius: 16px;
+      padding: 15px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 5;
+    }
 
-  /* Reaction when cursor/finger hovers over button */
-  .runaway-btn:hover {
-    background-color: #f59e0b;
-     }
-  .level-selector {
-    margin: 15px 0;
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
+    h1 {
+      margin: 0 0 4px 0;
+      font-size: 1.4rem;
+    }
 
-  .lel-btn {
-    background: #2a2d3d;
-    color: white;
-    border: 2px solid #4a4e69;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2 ease;
-  }
+    .sub-text {
+      color: #94a3b8;
+      margin: 0 0 10px 0;
+      font-size: 0.85rem;
+    }
 
-  .lel-btn.active {
-    background-color: #ec4899;
-    border-color: #f472b6;
-    box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-  }
-  </style> 
+    .stats-grid {
+      display: flex;
+      justify-content: space-around;
+      background: rgba(255,255,255,0.05);
+      padding: 6px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .stat-item {
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+
+    .rank-badge {
+      margin: 8px 0 4px 0;
+      font-size: 1.05rem;
+      color: #ffeb3b;
+      font-weight: bold;
+    }
+
+    /* Initially Hidden Freeze Tracker */
+    .cheat-tracker {
+      display: none;
+      font-size: 0.85rem;
+      color: #38bdf8;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .level-selector {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .lvl-btn {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 2px solid #475569;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.78rem;
+      transition: all 0.2s ease;
+    }
+
+    .lvl-btn:hover {
+      border-color: #38bdf8;
+    }
+
+    .lvl-btn.active {
+      background-color: #ec4899;
+      border-color: #f472b6;
+      color: white;
+      box-shadow: 0 0 10px rgba(236, 72, 153, 0.6);
+    }
+
+    .instructions-btn {
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: transform 0.2s ease;
+    }
+    .instructions-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Challenge Button Fixed to Bottom-Right Corner */
+    .share-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #00e5ff;
+      color: #0f172a;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.9rem;
+      z-index: 50;
+      box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    .share-btn:hover {
+      transform: scale(1.08);
+      filter: brightness(1.1);
+    }
+
+    /* Target Runaway Button & Decoys */
+    .runaway-btn, .decoy-btn {
+      position: fixed;
+      top: 80%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ef4444;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: left 0.15s ease, top 0.15s ease, background-color 0.2s ease, transform 0.15s ease;
+      user-select: none;
+      touch-action: none;
+      z-index: 10;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .frozen {
+      background-color: #00e676 !important;
+      box-shadow: 0 0 25px #00e676 !important;
+      transform: scale(1.1) !important;
+    }
+
+    /* Modal / Popup Windows */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.75);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: #1e293b;
+      border: 2px solid #38bdf8;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px; right: 15px;
+      font-size: 22px;
+      cursor: pointer;
+      color: #94a3b8;
+    }
+    .close-btn:hover { color: white; }
+
+    .modal-title { font-size: 1.3rem; color: #38bdf8; margin-bottom: 10px; }
+    .modal-body { text-align: left; font-size: 0.9rem; line-height: 1.5; color: #cbd5e1; }
+    .modal-body ul { padding-left: 20px; }
+  </style>
 </head>
 <body>
 
-<div class="arena">
-<h1>⚠️ DO NOT TOUCH⚠️</h1>
-<p> This button is extremely shy... </p>
-<p id="dodge-count">Dodges: 0</p>
-<div class = "level-selector">
-  <button class="lvl-btn active" onclick="setLevel(1)">Lvl 1:shy</button>
-  <button class="lvl-btn" onclick="setLevel(2)">Lvl 2: panicked</button>
-  <button class="lvl-btn" onclick="setLevel(3)">Lvl 3: Hyperactive</button>
-  <button class="lvl-btn" onclick="setLevel(4)">Lvl 4: Impossible</button>
-</div>
-<button class="runaway-btn">CLICK ME!</button>
-</div>
+  <!-- Game Dashboard Area -->
+  <div class="arena">
+    <h1>⚠️ DO NOT TOUCH ⚠️</h1>
+    <p class="sub-text">This button is extremely shy...</p>
+    
+    <div class="stats-grid">
+      <div id="dodge-count" class="stat-item">Dodges: 0</div>
+      <div id="click-count" class="stat-item">Clicks: 0</div>
+    </div>
+    
+    <div id="player-rank" class="rank-badge">Rank: Snail Reflexes 🐌</div>
+    <div id="cheat-count" class="cheat-tracker">Freeze Charges: ⚡ 3/3</div>
 
-<script>
-  const btn = document.querySelector('.runaway-btn');
-  const counterdisplay = document.getElementById('dodge-count');
+    <div class="level-selector">
+      <button class="lvl-btn active" onclick="setLevel(1)">Lvl 1: Shy</button>
+      <button class="lvl-btn" onclick="setLevel(2)">Lvl 2: Panicked</button>
+      <button class="lvl-btn" onclick="setLevel(3)">Lvl 3: Hyperactive</button>
+      <button class="lvl-btn" onclick="setLevel(4)">Lvl 4: Impossible</button>
+    </div>
 
-  let dodges = 0
-  let currentLevel = 1;
+    <button id="instructions-btn" class="instructions-btn">❓ How to Play</button>
+  </div>
 
-  const taunts = ["Too slow!", "Nice try", "Missed me!", "can't touch this!", "Almost!", "Nope not now!"];
-  const colors = ["#ef4444", "#3b82f6", "#10b981" ,"#f59e0b", "#ec4899"]
-  
-function setLevel(lvl) {
-  currentLevel = lvl;
-  document.querySelectorAll('.lvl-btn').forEach((b, idx) => {
-    b.classList.toggle('active , idx + 1 === lvl');
-  });
+  <!-- Challenge Button Fixed on Bottom Right -->
+  <button id="share-btn" class="share-btn">🚀 Challenge a Friend</button>
 
-  //Level speed control
-  if (lvl === 1) btn.style.transition = "left 0.3s ease, top 0.3s ease";
-  if (lvl === 2) btn.style.transition = "left 0.15s ease, top 0.15s ease";
-  if (lvl === 3) btn.style.transition = "left 0.05s ease, top 0.05s ease";
-  if (lvl === 4) btn.stylr.transition = "none"; // Instant teleporting
-}
-  btn.addEventListener('mouseover' , function (e) {
-    dodges++;
-    if (counterdisplay) {
-    counterdisplay.textContent =`Dodges: ${dodges}`;
+  <!-- The Actual Runaway Button -->
+  <button class="runaway-btn">CLICK ME!</button>
+
+  <!-- How to Play Popup -->
+  <div id="howto-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal('howto-modal')">&times;</span>
+      <div class="modal-title">🎮 How To Play</div>
+      <div class="modal-body">
+        <ul>
+          <li><strong>Goal:</strong> Catch and click the runaway button!</li>
+          <li><strong>Rank Up:</strong> Successful clicks increase your rank!</li>
+          <li><strong>Freeze Power:</strong> Press <mark>SPACEBAR</mark> to freeze the button for 4 seconds and click it as much as you want!</li>
+          <li><strong>Decoy Hazard:</strong> Watch out for fake red clone buttons at 20+ dodges! If you click one, your Clicks reset to 0!</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Challenge Friend Popup -->
+  <div id="challenge-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal('challenge-modal')">&times;</span>
+      <div class="modal-title">🏆 Challenge Created!</div>
+      <div class="modal-body">
+        <p><strong>Your Stats:</strong></p>
+        <p>• Successful Clicks: <span id="modal-clicks">0</span></p>
+        <p>• Dodges Survived by Button: <span id="modal-dodges">0</span></p>
+        <p>• Rank: <span id="modal-rank">-</span></p>
+        <hr style="border-color: #334155;">
+        <p style="text-align: center; color: #00e5ff; font-weight: bold;">
+          📋 Challenge text copied to clipboard!
+        </p>
+        <p style="font-size: 0.85rem; color: #94a3b8; text-align: center;">
+          Paste it directly into Slack or Discord to challenge your friends!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.querySelector('.runaway-btn');
+    const arena = document.querySelector('.arena');
+    const counterdisplay = document.getElementById('dodge-count');
+    const clickdisplay = document.getElementById('click-count');
+    const rankdisplay = document.getElementById('player-rank');
+    const cheatdisplay = document.getElementById('cheat-count');
+    const sharebtn = document.getElementById('share-btn');
+    const instructionsbtn = document.getElementById('instructions-btn');
+
+    let clicks = 0;
+    let dodges = 0;
+    let currentLevel = 1;
+    let isFrozen = false;
+    let cheatCharges = 3;
+    let activeDecoys = [];
+
+    const taunts = ["Too slow!", "Nice try", "Missed me!", "Can't touch this!", "Almost!", "Nope!"];
+    const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#ec4899"];
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const ut = new SpeechSynthesisUtterance(text);
+        ut.pitch = 1.3;
+        ut.rate = 1.3;
+        window.speechSynthesis.speak(ut);
+      }
     }
 
-    btn.textContent = taunts[Math.floor(Math.random() * taunts.length)]
-    btn.style.backgroundColor = colors[Math.floor(Math.random() *colors.length)];
-    const randomHue = Math.floor(Math.random() * 360);
-    document.body.style.backgroundColor = `hsl(${randomHue} , 50% , 18%)`;
+    // Rank logic calculated strictly by CLICKS
+    function updateRank() {
+      if (!rankdisplay) return;
+      if (clicks <= 5) rankdisplay.textContent = "Rank: Snail Reflexes 🐌";
+      else if (clicks <= 15) rankdisplay.textContent = "Rank: Coffee Jitters ☕";
+      else if (clicks <= 30) rankdisplay.textContent = "Rank: Lightning Fingers ⚡";
+      else rankdisplay.textContent = "Rank: Touch Grass Please 🌾";
+    }
 
-    let scaleMin = 0.8, scaleMax = 1.3;
-    if (currentLevel === 3) { scaleMin = 0.6; scaleMax = 1.4; }
-    if (currentLevel === 4) { scaleMin = 0.3; scaleMax = 0.20; }
+    function setLevel(lvl) {
+      currentLevel = lvl;
+      document.querySelectorAll('.lvl-btn').forEach((b, idx) => {
+        b.classList.toggle('active', idx + 1 === lvl);
+      });
 
-    const randomScale = (Math.random() * (scaleMax - scaleMin) + scaleMin).toFixed(2);
-    btn.style.transform = `scale(${randomScale})`;
-    const screenWidth =window.innerWidth;
-    const screenHeight = window.innerHeight;
-    const btnWidth = btn.offsetWidth;
-    const btnHeight = btn.offsetHeight
-    const padding = 20;
+      if (lvl === 1) btn.style.transition = "left 0.3s ease, top 0.3s ease";
+      if (lvl === 2) btn.style.transition = "left 0.15s ease, top 0.15s ease";
+      if (lvl === 3) btn.style.transition = "left 0.05s ease, top 0.05s ease";
+      if (lvl === 4) btn.style.transition = "none";
+    }
 
-  // 1. calculate the maximum safe space so it doesn't go off-screen
-  const maxX = screenWidth - btnWidth - padding;
-  const maxY = screenHeight - btnHeight - padding;
+    function getRandomPosition() {
+      const padding = 20;
+      const arenaRect = arena.getBoundingClientRect();
+      const btnWidth = btn.offsetWidth || 120;
+      const btnHeight = btn.offsetHeight || 50;
 
-  //2.Generate a totally random X and Y coordinate
-  const randomX = Math.floor(Math.random() * maxX);
-  const randomY = Math.floor(Math.random() * maxY);
+      let x, y, safe = false;
+      let attempts = 0;
 
-  //3.Move the button to the new random spot
-  btn.style.left = randomX + 'px';
-  btn.style.top = randomY+ 'px';
-});
-</script>
+      while (!safe && attempts < 100) {
+        attempts++;
+        x = Math.max(padding, Math.floor(Math.random() * (window.innerWidth - btnWidth - padding)));
+        y = Math.max(padding, Math.floor(Math.random() * (window.innerHeight - btnHeight - padding)));
 
+        const overlapsArena = !(
+          x + btnWidth < arenaRect.left - 10 ||
+          x > arenaRect.right + 10 ||
+          y + btnHeight < arenaRect.top - 10 ||
+          y > arenaRect.bottom + 10
+        );
+
+        if (!overlapsArena) safe = true;
+      }
+      return { x, y };
+    }
+
+    function updateDecoys() {
+      activeDecoys.forEach(d => d.remove());
+      activeDecoys = [];
+
+      if (dodges >= 20) {
+        const decoyCount = Math.min(3, Math.floor((dodges - 15) / 5));
+        for (let i = 0; i < decoyCount; i++) {
+          const decoy = document.createElement('button');
+          decoy.className = 'decoy-btn';
+          decoy.textContent = taunts[Math.floor(Math.random() * taunts.length)];
+
+          const pos = getRandomPosition();
+          decoy.style.left = `${pos.x}px`;
+          decoy.style.top = `${pos.y}px`;
+
+          decoy.addEventListener('click', () => {
+            // Decoy now resets CLICKS to 0
+            clicks = 0;
+            if (clickdisplay) clickdisplay.textContent = `Clicks: ${clicks}`;
+            updateRank();
+            speakText("HAHAHA! You clicked a fake clone! Clicks reset to zero!");
+            alert("💥 RAGE QUIT! You clicked a decoy clone! Clicks reset to 0.");
+            updateDecoys();
+          });
+
+          document.body.appendChild(decoy);
+          activeDecoys.push(decoy);
+        }
+      }
+    }
+
+    function dodgeButton() {
+      if (isFrozen) return;
+
+      dodges++;
+      if (counterdisplay) counterdisplay.textContent = `Dodges: ${dodges}`;
+
+      btn.textContent = taunts[Math.floor(Math.random() * taunts.length)];
+      btn.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+      const shrinkSteps = Math.floor(dodges / 5);
+      const shrinkScale = Math.max(0.35, 1 - (shrinkSteps * 0.03)).toFixed(2);
+
+      const pos = getRandomPosition();
+
+      btn.style.transform = `scale(${shrinkScale})`;
+      btn.style.left = `${pos.x}px`;
+      btn.style.top = `${pos.y}px`;
+
+      updateDecoys();
+
+      if (dodges % 5 === 0) {
+        speakText("Too slow human!");
+      }
+    }
+
+    btn.addEventListener('mouseover', dodgeButton);
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      dodgeButton();
+    });
+
+    // Clicking button increases clicks continuously
+    btn.addEventListener('click', function() {
+      clicks++;
+      if (clickdisplay) clickdisplay.textContent = `Clicks: ${clicks}`;
+      updateRank();
+
+      if (isFrozen) {
+        btn.textContent = `CLICKED! (${clicks})`;
+      } else {
+        btn.textContent = "YOU WON!";
+        speakText("Congratulations! You caught me!");
+      }
+    });
+
+    instructionsbtn.addEventListener('click', () => {
+      document.getElementById('howto-modal').style.display = 'flex';
+    });
+
+    sharebtn.addEventListener('click', () => {
+      const currentRank = rankdisplay.textContent.replace('Rank: ', '');
+      document.getElementById('modal-dodges').textContent = dodges;
+      document.getElementById('modal-clicks').textContent = clicks;
+      document.getElementById('modal-rank').textContent = currentRank;
+
+      const shareMsg = `🔥 I caught the button ${clicks} times (${currentRank}) on The Runaway Panic Button! Can you beat me?`;
+      navigator.clipboard.writeText(shareMsg);
+
+      document.getElementById('challenge-modal').style.display = 'flex';
+    });
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        activateCheat();
+      }
+    });
+
+    function activateCheat() {
+      if (isFrozen) return;
+
+      // Reveal freeze tracker when Spacebar is pressed
+      cheatdisplay.style.display = 'block';
+
+      if (cheatCharges <= 0) {
+        speakText("No charges left!");
+        return;
+      }
+
+      cheatCharges--;
+      cheatdisplay.textContent = `Freeze Charges: ⚡ ${cheatCharges}/3`;
+
+      isFrozen = true;
+      btn.classList.add('frozen');
+      const oldText = btn.textContent;
+      btn.textContent = "FROZEN! SPAM CLICK ME!";
+      speakText("Button frozen!");
+
+      // 4-second freeze window to let player click as much as they want
+      setTimeout(() => {
+        isFrozen = false;
+        btn.classList.remove('frozen');
+        btn.textContent = oldText;
+      }, 4000);
+    }
+  </script>
 </body>
 </html>
-
- 
